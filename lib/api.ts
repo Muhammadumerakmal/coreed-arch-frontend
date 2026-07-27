@@ -82,6 +82,8 @@ export const auth = {
     ),
   logout: () => apiFetch<null>("/auth/logout", { method: "POST" }),
   currentUser: () => apiFetch<{ user: User }>("/auth/current-user", { method: "POST" }),
+  changePassword: (data: { oldPassword: string; newPassword: string }) =>
+    apiFetch<null>("/auth/change-password", { method: "POST", body: data }),
   updateAvatar: (file: File) => {
     const fd = new FormData();
     fd.append("avatar", file);

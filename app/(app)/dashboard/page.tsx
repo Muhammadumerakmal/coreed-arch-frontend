@@ -34,6 +34,8 @@ type Agg = {
   todo: number;
   overdue: number;
   pending: number;
+  subtaskTotal: number;
+  subtaskDone: number;
   teamCount: number;
   series: { tasks: number[]; done: number[]; pending: number[]; members: number[] };
   upcoming: { task: Task; projectName: string }[];
@@ -79,6 +81,7 @@ export default function DashboardPage() {
         const now = Date.now();
         const rows: ProjRow[] = [];
         let completed = 0, inProgress = 0, todo = 0, overdue = 0;
+        let subtaskTotal = 0, subtaskDone = 0;
         const series = { tasks: [] as number[], done: [] as number[], pending: [] as number[], members: [] as number[] };
         const upcoming: { task: Task; projectName: string }[] = [];
         const activity: { task: Task; projectName: string }[] = [];
@@ -99,6 +102,8 @@ export default function DashboardPage() {
           for (const t of tasks) {
             if (t.status !== "done" && t.dueDate) upcoming.push({ task: t, projectName: mp.project.name });
             activity.push({ task: t, projectName: mp.project.name });
+            subtaskTotal += t.subtaskCount ?? 0;
+            subtaskDone += t.completedSubtaskCount ?? 0;
           }
         }
 
@@ -109,6 +114,8 @@ export default function DashboardPage() {
           rows,
           completed, inProgress, todo, overdue,
           pending: todo + inProgress,
+          subtaskTotal,
+          subtaskDone,
           teamCount: teamMap.size,
           series,
           upcoming: upcoming.slice(0, 4),
@@ -213,6 +220,17 @@ export default function DashboardPage() {
             <LegendRow color={STATUS_HEX["to-do"]} label="To Do" value={d.todo} total={totalTasks} />
             <LegendRow color={OVERDUE_HEX} label="Overdue" value={d.overdue} total={totalTasks} />
           </div>
+          {d.subtaskTotal > 0 && (
+            <div className="mt-4 w-full">
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-violet-500" /> Subtasks</span>
+                <span className="font-medium">{d.subtaskDone}/{d.subtaskTotal}</span>
+              </div>
+              <div className="bg-muted h-2 overflow-hidden rounded-full">
+                <div className="bg-violet-500 h-full rounded-full" style={{ width: `${Math.round((d.subtaskDone / d.subtaskTotal) * 100)}%` }} />
+              </div>
+            </div>
+          )}
         </Card>
       </div>
 

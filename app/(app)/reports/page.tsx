@@ -17,6 +17,8 @@ type Data = {
   projectsCount: number;
   priority: Record<TaskPriority, number>;
   perProject: { name: string; done: number; total: number }[];
+  subtaskTotal: number;
+  subtaskDone: number;
 };
 
 export default function ReportsPage() {
@@ -31,7 +33,12 @@ export default function ReportsPage() {
       const all = lists.flatMap((l) => l.tasks);
       const now = Date.now();
       const priority: Record<TaskPriority, number> = { low: 0, medium: 0, high: 0, critical: 0 };
-      for (const t of all) priority[t.priority]++;
+      let subtaskTotal = 0, subtaskDone = 0;
+      for (const t of all) {
+        priority[t.priority]++;
+        subtaskTotal += t.subtaskCount ?? 0;
+        subtaskDone += t.completedSubtaskCount ?? 0;
+      }
       if (active) setData({
         total: all.length,
         done: all.filter((t) => t.status === "done").length,
@@ -41,6 +48,8 @@ export default function ReportsPage() {
         projectsCount: projects.length,
         priority,
         perProject: lists.map((l) => ({ name: l.name, done: l.tasks.filter((t) => t.status === "done").length, total: l.tasks.length })),
+        subtaskTotal,
+        subtaskDone,
       });
     })();
     return () => { active = false; };
@@ -108,27 +117,47 @@ export default function ReportsPage() {
         </Card>
       </div>
 
-      <Card className="p-6">
-        <h3 className="mb-4 font-semibold">Project Completion</h3>
-        {data.perProject.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No projects yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {data.perProject.map((p) => {
-              const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
-              return (
-                <div key={p.name}>
-                  <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="truncate font-medium">{p.name}</span>
-                    <span className="text-muted-foreground">{p.done}/{p.total} · {pct}%</span>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="p-6">
+          <h3 className="mb-4 font-semibold">Project Completion</h3>
+          {data.perProject.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No projects yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {data.perProject.map((p) => {
+                const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+                return (
+                  <div key={p.name}>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="truncate font-medium">{p.name}</span>
+                      <span className="text-muted-foreground">{p.done}/{p.total} · {pct}%</span>
+                    </div>
+                    <Progress value={pct} indicatorClassName="bg-primary" />
                   </div>
-                  <Progress value={pct} indicatorClassName="bg-primary" />
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-6">
+          <h3 className="mb-4 font-semibold">Subtask Completion</h3>
+          {data.subtaskTotal === 0 ? (
+            <p className="text-muted-foreground text-sm">No subtasks yet.</p>
+          ) : (
+            <>
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Completed</span>
+                <span className="font-medium">{data.subtaskDone}/{data.subtaskTotal} · {Math.round((data.subtaskDone / data.subtaskTotal) * 100)}%</span>
+              </div>
+              <Progress value={Math.round((data.subtaskDone / data.subtaskTotal) * 100)} indicatorClassName="bg-violet-500" />
+              <p className="text-muted-foreground mt-3 text-sm">
+                Subtasks across all {data.projectsCount} active project{data.projectsCount === 1 ? "" : "s"}.
+              </p>
+            </>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

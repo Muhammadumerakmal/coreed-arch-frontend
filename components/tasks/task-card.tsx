@@ -4,6 +4,7 @@ import type { Task, ProjectMember } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { PRIORITY_VARIANT, relativeDue, initials } from "@/lib/format";
+import { motion } from "motion/react";
 import type { TaskStatus } from "@/lib/types";
 
 const STATUSES: TaskStatus[] = ["to-do", "in-progress", "done"];
@@ -26,7 +27,13 @@ export function TaskCard({
   const subPct = task.subtaskCount ? Math.round(((task.completedSubtaskCount ?? 0) / task.subtaskCount) * 100) : 0;
 
   return (
-    <div className="bg-card hover:border-primary/40 cursor-pointer rounded-lg border border-border/60 p-3 shadow-sm transition-colors" onClick={onOpen}>
+    <motion.div
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 22 }}
+      className="bg-card hover:border-primary/40 cursor-pointer rounded-lg border border-border/60 p-3 shadow-sm transition-colors"
+      onClick={onOpen}
+    >
       <div className="flex items-start justify-between gap-2">
         <Badge variant={PRIORITY_VARIANT[task.priority]}>{task.priority}</Badge>
         <div onClick={(e) => e.stopPropagation()}>
@@ -71,6 +78,6 @@ export function TaskCard({
           </div>
         </div>
       ) : null}
-    </div>
+    </motion.div>
   );
 }

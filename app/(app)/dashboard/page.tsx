@@ -23,6 +23,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Donut } from "@/components/charts/donut";
+import { motion } from "motion/react";
+import { containerStagger, fadeUp } from "@/lib/animations";
 import { initials, colorFromString, relativeDue, formatDate, STATUS_HEX, OVERDUE_HEX } from "@/lib/format";
 
 type ProjRow = { p: MyProject["project"]; role: string; total: number; done: number; pct: number };
@@ -159,20 +161,33 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total Projects" value={d.rows.length} icon={FolderKanban}
-          tint="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" color={STATUS_HEX["in-progress"]}
-          series={d.series.tasks} caption={`${totalTasks} tasks total`} />
-        <StatCard label="Completed Tasks" value={d.completed} icon={CheckCircle2}
-          tint="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" color={STATUS_HEX.done}
-          series={d.series.done} caption={totalTasks ? `${Math.round((d.completed / totalTasks) * 100)}% of all tasks` : "No tasks yet"} />
-        <StatCard label="Pending Tasks" value={d.pending} icon={Clock}
-          tint="bg-amber-500/15 text-amber-600 dark:text-amber-400" color={STATUS_HEX["to-do"]}
-          series={d.series.pending} caption={`${d.overdue} overdue`} />
-        <StatCard label="Team Members" value={d.teamCount} icon={Users}
-          tint="bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400" color="#a855f7"
-          series={d.series.members} caption="across your projects" />
-      </div>
+      <motion.div
+        variants={containerStagger}
+        initial="hidden"
+        animate="visible"
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        <motion.div variants={fadeUp}>
+          <StatCard label="Total Projects" value={d.rows.length} icon={FolderKanban}
+            tint="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" color={STATUS_HEX["in-progress"]}
+            series={d.series.tasks} caption={`${totalTasks} tasks total`} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard label="Completed Tasks" value={d.completed} icon={CheckCircle2}
+            tint="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" color={STATUS_HEX.done}
+            series={d.series.done} caption={totalTasks ? `${Math.round((d.completed / totalTasks) * 100)}% of all tasks` : "No tasks yet"} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard label="Pending Tasks" value={d.pending} icon={Clock}
+            tint="bg-amber-500/15 text-amber-600 dark:text-amber-400" color={STATUS_HEX["to-do"]}
+            series={d.series.pending} caption={`${d.overdue} overdue`} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard label="Team Members" value={d.teamCount} icon={Users}
+            tint="bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400" color="#a855f7"
+            series={d.series.members} caption="across your projects" />
+        </motion.div>
+      </motion.div>
 
       {/* Projects + Tasks overview */}
       <div className="grid gap-6 lg:grid-cols-5">

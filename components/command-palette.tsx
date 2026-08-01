@@ -20,6 +20,8 @@ import {
 import { tasks as tasksApi } from "@/lib/api";
 import type { Task } from "@/lib/types";
 import { useMyProjects } from "@/lib/hooks";
+import { motion, AnimatePresence } from "motion/react";
+import { EASE } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type Entry = { id: string; label: string; sub: string; href: string; icon: LucideIcon };
@@ -143,17 +145,29 @@ export function CommandPalette({
     }
   };
 
-  if (!open) return null;
-
   let flatIndex = -1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh]">
-      <div
-        className="animate-in fade-in-0 absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={() => onOpenChange(false)}
-      />
-      <div className="bg-popover text-popover-foreground animate-pop-in relative w-full max-w-lg overflow-hidden rounded-xl border border-border/60 shadow-2xl">
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: EASE }}
+        >
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => onOpenChange(false)}
+          />
+          <motion.div
+            className="bg-popover text-popover-foreground relative w-full max-w-lg overflow-hidden rounded-xl border border-border/60 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.96, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: -6 }}
+            transition={{ duration: 0.22, ease: EASE }}
+          >
         {/* Search input */}
         <div className="flex items-center gap-3 border-b border-border/60 px-4">
           <Search className="text-muted-foreground size-4 shrink-0" />
@@ -224,7 +238,9 @@ export function CommandPalette({
           <span className="flex items-center gap-1.5"><span className="text-muted-foreground">↑↓</span> navigate</span>
           <span className="ml-auto flex items-center gap-1"><kbd className="rounded border border-border/60 px-1 text-[10px]">Ctrl</kbd> <kbd className="rounded border border-border/60 px-1 text-[10px]">K</kbd> toggle</span>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

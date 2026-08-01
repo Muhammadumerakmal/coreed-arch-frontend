@@ -16,6 +16,8 @@ import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
 import { useProjects } from "@/components/providers/projects-provider";
+import { motion } from "motion/react";
+import { containerStagger, fadeUp } from "@/lib/animations";
 import { formatDate } from "@/lib/format";
 
 type Row = { project: Project; role: MemberRole; total: number; done: number; members: number };
@@ -97,11 +99,12 @@ export default function ProjectsPage() {
       )}
 
       {rows && rows.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <motion.div variants={containerStagger} initial="hidden" animate="visible" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {rows.map(({ project, role, total, done, members }) => {
             const pct = total ? Math.round((done / total) * 100) : 0;
             return (
-              <Card key={project._id} hover className="group gap-0 p-5">
+              <motion.div key={project._id} variants={fadeUp}>
+                <Card hover className="group gap-0 p-5">
                 <div className="flex items-start justify-between">
                   <Link href={`/projects/${project._id}`} className="flex items-center gap-3">
                     <div className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-xl"><FolderKanban className="size-5" /></div>
@@ -138,10 +141,11 @@ export default function ProjectsPage() {
                   </div>
                   <p className="text-muted-foreground mt-2 text-[11px]">Updated {formatDate(project.updatedAt)}</p>
                 </Link>
-              </Card>
+                </Card>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
 
       <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} project={editing} onSaved={refresh} />

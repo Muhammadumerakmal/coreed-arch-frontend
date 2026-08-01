@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { EmptyState } from "@/components/common/empty-state";
 import { formatDate } from "@/lib/format";
 
 type Row = { project: Project; role: MemberRole; total: number; done: number; members: number };
@@ -84,11 +85,13 @@ export default function ProjectsPage() {
       )}
 
       {rows && rows.length === 0 && (
-        <Card className="flex flex-col items-center gap-3 py-20 text-center">
-          <div className="bg-muted flex size-14 items-center justify-center rounded-full"><FolderKanban className="text-muted-foreground size-6" /></div>
-          <p className="font-medium">No projects yet</p>
-          <p className="text-muted-foreground text-sm">Create your first project to get started.</p>
-          <Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="size-4" /> New Project</Button>
+        <Card className="gap-0">
+          <EmptyState
+            icon={FolderKanban}
+            title="No projects yet"
+            description="Create your first project to get started."
+            action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="size-4" /> New Project</Button>}
+          />
         </Card>
       )}
 
@@ -97,7 +100,7 @@ export default function ProjectsPage() {
           {rows.map(({ project, role, total, done, members }) => {
             const pct = total ? Math.round((done / total) * 100) : 0;
             return (
-              <Card key={project._id} className="group gap-0 p-5">
+              <Card key={project._id} hover className="group gap-0 p-5">
                 <div className="flex items-start justify-between">
                   <Link href={`/projects/${project._id}`} className="flex items-center gap-3">
                     <div className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-xl"><FolderKanban className="size-5" /></div>

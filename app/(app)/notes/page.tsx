@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Plus, MoreVertical, Pin, PinOff, Pencil, Trash2, StickyNote } from "lucide-react";
+import { Plus, MoreVertical, Pin, PinOff, Pencil, Trash2, StickyNote, FolderKanban } from "lucide-react";
 import { notes as notesApi, ApiError } from "@/lib/api";
 import type { Note } from "@/lib/types";
 import { useToast } from "@/components/ui/toast";
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { NoteFormDialog } from "@/components/notes/note-form-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { EmptyState } from "@/components/common/empty-state";
 import { formatDate } from "@/lib/format";
 
 export default function NotesPage() {
@@ -68,16 +69,25 @@ export default function NotesPage() {
       </div>
 
       {!projectsLoading && projects.length === 0 && (
-        <Card className="py-16 text-center"><p className="text-muted-foreground text-sm">You have no projects yet.</p></Card>
+        <Card className="gap-0">
+          <EmptyState
+            icon={FolderKanban}
+            title="No projects yet"
+            description="Create a project to start adding notes."
+          />
+        </Card>
       )}
 
       {!list && selected && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40" />)}</div>}
 
       {list && list.length === 0 && (
-        <Card className="flex flex-col items-center gap-2 py-16 text-center">
-          <div className="bg-muted flex size-12 items-center justify-center rounded-full"><StickyNote className="text-muted-foreground size-5" /></div>
-          <p className="font-medium">No notes yet</p>
-          <p className="text-muted-foreground text-sm">Create your first note for this project.</p>
+        <Card className="gap-0">
+          <EmptyState
+            icon={StickyNote}
+            title="No notes yet"
+            description="Create your first note for this project."
+            action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="size-4" /> New Note</Button>}
+          />
         </Card>
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { UserPlus, MoreVertical, Trash2, Shield } from "lucide-react";
+import { UserPlus, MoreVertical, Trash2, Shield, FolderKanban, Users } from "lucide-react";
 import { members as membersApi, ApiError } from "@/lib/api";
 import type { ProjectMember, MemberRole } from "@/lib/types";
 import { useToast } from "@/components/ui/toast";
@@ -15,6 +15,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AddMemberDialog } from "@/components/members/add-member-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { EmptyState } from "@/components/common/empty-state";
 import { initials, colorFromString } from "@/lib/format";
 
 const ROLE_VARIANT: Record<MemberRole, "danger" | "warning" | "secondary"> = {
@@ -84,13 +85,30 @@ export default function MembersPage() {
       </div>
 
       {!projectsLoading && projects.length === 0 && (
-        <Card className="py-16 text-center"><p className="text-muted-foreground text-sm">You have no projects yet.</p></Card>
+        <Card className="gap-0">
+          <EmptyState
+            icon={FolderKanban}
+            title="No projects yet"
+            description="Create a project to start managing members."
+          />
+        </Card>
       )}
 
       {selected && (
         <Card className="divide-border/60 gap-0 divide-y py-0">
           {!list && Array.from({ length: 4 }).map((_, i) => <div key={i} className="p-4"><Skeleton className="h-10 w-full" /></div>)}
-          {list && list.length === 0 && <p className="text-muted-foreground p-8 text-center text-sm">No members.</p>}
+          {list && list.length === 0 && (
+            <EmptyState
+              icon={Users}
+              title="No members yet"
+              description="Add team members to this project."
+              action={
+                canManage ? (
+                  <Button onClick={() => setAddOpen(true)}><UserPlus className="size-4" /> Add Member</Button>
+                ) : undefined
+              }
+            />
+          )}
           {list?.map((m) => (
             <div key={m._id} className="flex items-center gap-3 px-4 py-3">
               <Avatar>

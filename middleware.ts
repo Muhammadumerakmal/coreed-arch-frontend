@@ -32,7 +32,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasToken && isAuthPage) {
+  if (hasToken && (isAuthPage || pathname === "/")) {
     const url = req.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
@@ -43,6 +43,7 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/dashboard/:path*",
     "/projects/:path*",
     "/tasks/:path*",

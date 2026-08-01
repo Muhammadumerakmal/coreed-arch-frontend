@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { EmptyState } from "@/components/common/empty-state";
 import { STATUS_LABEL, PRIORITY_VARIANT, relativeDue } from "@/lib/format";
 
 type Row = Task & { projectName: string };
@@ -60,10 +61,12 @@ export default function AllTasksPage() {
       {!rows ? (
         <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
       ) : filtered.length === 0 ? (
-        <Card className="flex flex-col items-center gap-2 py-16 text-center">
-          <div className="bg-muted flex size-12 items-center justify-center rounded-full"><ListChecks className="text-muted-foreground size-5" /></div>
-          <p className="font-medium">No tasks found</p>
-          <p className="text-muted-foreground text-sm">Try adjusting the filters, or create tasks inside a project.</p>
+        <Card className="gap-0">
+          <EmptyState
+            icon={ListChecks}
+            title="No tasks found"
+            description="Try adjusting the filters, or create tasks inside a project."
+          />
         </Card>
       ) : (
         <Card className="divide-border/60 gap-0 divide-y overflow-hidden py-0">

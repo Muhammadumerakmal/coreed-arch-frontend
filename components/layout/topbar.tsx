@@ -1,6 +1,7 @@
 "use client";
+import * as React from "react";
 import Link from "next/link";
-import { Search, Bell, Menu, ChevronDown } from "lucide-react";
+import { Search, Menu, ChevronDown } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -11,10 +12,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { CommandPalette } from "@/components/command-palette";
+import { NotificationsPopover } from "@/components/common/notifications-popover";
 import { initials } from "@/lib/format";
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { user, logout } = useAuth();
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
 
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/60 px-4 backdrop-blur md:px-6">
@@ -26,22 +30,23 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         <Menu className="size-5" />
       </button>
 
-      {/* Search */}
-      <div className="relative hidden max-w-md flex-1 sm:block">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-        <input
-          placeholder="Search projects, tasks..."
-          className="bg-muted/60 focus-visible:ring-ring/40 h-10 w-full rounded-lg border border-transparent pl-9 pr-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px]"
-        />
-      </div>
+      {/* Search trigger */}
+      <button
+        onClick={() => setPaletteOpen(true)}
+        className="group flex w-full max-w-md items-center gap-3 rounded-lg border border-border/60 bg-muted/60 py-2 pl-3 pr-2 text-left transition-colors hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:max-w-xs md:max-w-sm"
+      >
+        <Search className="text-muted-foreground size-4" />
+        <span className="text-muted-foreground flex-1 text-sm">Search projects, tasks…</span>
+        <kbd className="text-muted-foreground hidden items-center gap-0.5 rounded border border-border/60 bg-background px-1.5 py-0.5 text-[10px] font-medium sm:flex">
+          Ctrl&nbsp;K
+        </kbd>
+      </button>
 
       <div className="ml-auto flex items-center gap-2">
-        <button className="hover:bg-accent relative rounded-lg p-2" aria-label="Notifications">
-          <Bell className="size-5" />
-        </button>
+        <NotificationsPopover />
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="hover:bg-accent flex items-center gap-2 rounded-lg p-1.5 outline-none">
+          <DropdownMenuTrigger className="hover:bg-accent flex items-center gap-2 rounded-lg p-1.5 outline-none transition-colors">
             <Avatar>
               {user?.avatar && <AvatarImage src={user.avatar} alt={user.fullName || user.username} />}
               <AvatarFallback>{initials(user?.fullName || user?.username)}</AvatarFallback>
@@ -68,6 +73,8 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </header>
   );
 }

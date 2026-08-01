@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/auth/password-input";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export function RegisterForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
-        <Input id="username" required placeholder="janedoe" value={username} onChange={(e) => setUsername(e.target.value)} />
+        <Input id="username" required autoFocus placeholder="janedoe" value={username} onChange={(e) => setUsername(e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
@@ -43,7 +44,7 @@ export function RegisterForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" required placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <PasswordInput id="password" required placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {loading && <Loader2 className="size-4 animate-spin" />} Create account

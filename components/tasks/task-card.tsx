@@ -23,6 +23,7 @@ export function TaskCard({
   const assigneeId = typeof task.assignedTo === "object" ? task.assignedTo?._id : task.assignedTo;
   const assignee = members.find((m) => m.user._id === assigneeId)?.user;
   const due = task.dueDate ? relativeDue(task.dueDate) : null;
+  const subPct = task.subtaskCount ? Math.round(((task.completedSubtaskCount ?? 0) / task.subtaskCount) * 100) : 0;
 
   return (
     <div className="bg-card hover:border-primary/40 cursor-pointer rounded-lg border border-border/60 p-3 shadow-sm transition-colors" onClick={onOpen}>
@@ -58,6 +59,18 @@ export function TaskCard({
           </span>
         )}
       </div>
+
+      {task.subtaskCount ? (
+        <div className="mt-2.5">
+          <div className="text-muted-foreground flex items-center justify-between text-[11px]">
+            <span>{task.completedSubtaskCount ?? 0}/{task.subtaskCount} subtasks</span>
+            <span>{subPct}%</span>
+          </div>
+          <div className="bg-muted mt-1 h-1.5 overflow-hidden rounded-full">
+            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${subPct}%` }} />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

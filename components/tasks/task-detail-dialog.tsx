@@ -53,6 +53,7 @@ export function TaskDetailDialog({
       const s = await subtasksApi.create(projectId, task._id, { title: newTitle.trim() });
       setSubs((prev) => [...prev, s]);
       setNewTitle("");
+      onChanged();
     } catch (err) {
       toast(err instanceof ApiError ? err.message : "Failed to add subtask", "error");
     } finally {
@@ -65,6 +66,7 @@ export function TaskDetailDialog({
     setSubs((prev) => prev.map((x) => (x._id === s._id ? optimistic : x)));
     try {
       await subtasksApi.update(projectId, task!._id, s._id, { isCompleted: !s.isCompleted });
+      onChanged();
     } catch {
       setSubs((prev) => prev.map((x) => (x._id === s._id ? s : x))); // revert
       toast("Failed to update subtask", "error");
@@ -75,6 +77,7 @@ export function TaskDetailDialog({
     setSubs((prev) => prev.filter((x) => x._id !== s._id));
     try {
       await subtasksApi.remove(projectId, task!._id, s._id);
+      onChanged();
     } catch {
       toast("Failed to delete subtask", "error");
     }

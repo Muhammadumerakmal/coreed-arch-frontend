@@ -94,6 +94,9 @@ export interface Task {
   actualHours?: number;
   tags: string[];
   attachments: TaskAttachment[];
+  /** Enriched by the task-list endpoint (single aggregation). */
+  subtaskCount?: number;
+  completedSubtaskCount?: number;
   createdAt: string;
   updatedAt: string;
 }

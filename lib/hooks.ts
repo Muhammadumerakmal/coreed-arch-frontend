@@ -1,22 +1,8 @@
 "use client";
-import * as React from "react";
-import { projects as projectsApi } from "@/lib/api";
-import type { MyProject } from "@/lib/types";
+import { useProjects } from "@/components/providers/projects-provider";
 
-/** Loads the current user's projects once, for selectors on Members / Notes / AI pages. */
+/** Reads the shared, cached project list (loaded once per app-shell mount). */
 export function useMyProjects() {
-  const [projects, setProjects] = React.useState<MyProject[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    let active = true;
-    projectsApi
-      .list()
-      .then((d) => active && setProjects(d.projects))
-      .catch(() => active && setProjects([]))
-      .finally(() => active && setLoading(false));
-    return () => { active = false; };
-  }, []);
-
+  const { projects, loading } = useProjects();
   return { projects, loading };
 }

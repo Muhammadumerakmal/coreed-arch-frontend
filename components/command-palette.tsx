@@ -17,8 +17,9 @@ import {
   Loader2,
   type LucideIcon,
 } from "lucide-react";
-import { projects as projectsApi, tasks as tasksApi } from "@/lib/api";
-import type { MyProject, Task } from "@/lib/types";
+import { tasks as tasksApi } from "@/lib/api";
+import type { Task } from "@/lib/types";
+import { useMyProjects } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 type Entry = { id: string; label: string; sub: string; href: string; icon: LucideIcon };
@@ -53,9 +54,9 @@ export function CommandPalette({
   onOpenChange: (o: boolean) => void;
 }) {
   const router = useRouter();
+  const { projects, loading: projectsLoading } = useMyProjects();
   const [query, setQuery] = React.useState("");
   const [index, setIndex] = React.useState(0);
-  const [projects, setProjects] = React.useState<MyProject[]>([]);
   const [tasks, setTasks] = React.useState<SearchTask[]>([]);
   const [loading, setLoading] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -73,13 +74,10 @@ export function CommandPalette({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
-  // Lazy-load projects + tasks the first time the palette opens
+  // Lazy-load tasks the first time the palette opens (projects come from the shared cache)
   const load = React.useCallback(async () => {
-    if (loadedRef.current) return;
-    loadedRef.current = true;
     setLoading(true);
     try {
-      const { projects } = await projectsApi.list().catch(() => ({ projects: [] as MyProject[] }));
       const taskLists = await Promise.all(
         projects.slice(0, 6).map((mp) =>
           tasksApi
@@ -88,21 +86,23 @@ export function CommandPalette({
             .catch(() => [] as SearchTask[]),
         ),
       );
-      setProjects(projects);
       setTasks(taskLists.flat());
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [projects]);
 
   React.useEffect(() => {
     if (open) {
       setQuery("");
       setIndex(0);
-      load();
+      if (!loadedRef.current && !projectsLoading) {
+        loadedRef.current = true;
+        load();
+      }
       requestAnimationFrame(() => inputRef.current?.focus());
     }
-  }, [open, load]);
+  }, [open, load, projectsLoading]);
 
   const groups = React.useMemo(() => {
     const result: { group: string; entries: Entry[] }[] = [];
@@ -173,7 +173,7 @@ export function CommandPalette({
 
         {/* Results */}
         <div className="max-h-72 overflow-y-auto p-2">
-          {loading && groups.length === 0 && (
+          {(loading || projectsLoading) && groups.length === 0 && (
             <div className="flex items-center gap-2 px-2 py-6 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" /> Loading your workspace…
             </div>

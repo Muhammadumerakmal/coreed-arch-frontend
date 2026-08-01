@@ -1,12 +1,14 @@
 "use client";
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { projects as projectsApi, tasks as tasksApi } from "@/lib/api";
+import { tasks as tasksApi } from "@/lib/api";
 import type { Task } from "@/lib/types";
+import { useMyProjects } from "@/lib/hooks";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { STATUS_CHIP, OVERDUE_CHIP } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -14,23 +16,24 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 
 function chipColor(t: Task): string {
   const overdue = t.status !== "done" && t.dueDate && new Date(t.dueDate).getTime() < Date.now();
-  if (t.status === "done") return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
-  if (overdue) return "bg-red-500/15 text-red-600 dark:text-red-400";
-  if (t.status === "in-progress") return "bg-blue-500/15 text-blue-600 dark:text-blue-400";
-  return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
+  if (overdue) return OVERDUE_CHIP;
+  return STATUS_CHIP[t.status];
 }
 
 export default function CalendarPage() {
+  const { projects, loading: projectsLoading } = useMyProjects();
   const [tasks, setTasks] = React.useState<Task[] | null>(null);
   const [cursor, setCursor] = React.useState(() => { const n = new Date(); return { y: n.getFullYear(), m: n.getMonth() }; });
 
   React.useEffect(() => {
+    if (projectsLoading) return;
+    let active = true;
     (async () => {
-      const { projects } = await projectsApi.list().catch(() => ({ projects: [] }));
       const all = await Promise.all(projects.map((mp) => tasksApi.list(mp.project._id, { limit: 100 }).then((r) => r.tasks).catch(() => [] as Task[])));
-      setTasks(all.flat().filter((t) => t.dueDate));
+      if (active) setTasks(all.flat().filter((t) => t.dueDate));
     })();
-  }, []);
+    return () => { active = false; };
+  }, [projects, projectsLoading]);
 
   const byDate = React.useMemo(() => {
     const map = new Map<string, Task[]>();

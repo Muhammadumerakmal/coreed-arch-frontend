@@ -15,12 +15,14 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
+import { useProjects } from "@/components/providers/projects-provider";
 import { formatDate } from "@/lib/format";
 
 type Row = { project: Project; role: MemberRole; total: number; done: number; members: number };
 
 export default function ProjectsPage() {
   const { toast } = useToast();
+  const { projects, loading: projectsLoading, refresh } = useProjects();
   const [rows, setRows] = React.useState<Row[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [formOpen, setFormOpen] = React.useState(false);
@@ -29,7 +31,6 @@ export default function ProjectsPage() {
 
   const load = React.useCallback(async () => {
     try {
-      const { projects } = await projectsApi.list();
       const built = await Promise.all(
         projects.map(async (mp) => {
           const tasks = await tasksApi.list(mp.project._id, { limit: 100 }).then((r) => r.tasks).catch(() => []);
@@ -46,15 +47,15 @@ export default function ProjectsPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load projects");
     }
-  }, []);
+  }, [projects]);
 
-  React.useEffect(() => { load(); }, [load]);
+  React.useEffect(() => { if (!projectsLoading) load(); }, [load, projectsLoading]);
 
   async function archive(p: Project) {
     try {
       await projectsApi.update(p._id, { isArchived: !p.metadata?.isArchived });
       toast(p.metadata?.isArchived ? "Project unarchived" : "Project archived", "success");
-      load();
+      refresh();
     } catch (e) {
       toast(e instanceof ApiError ? e.message : "Failed", "error");
     }
@@ -63,7 +64,7 @@ export default function ProjectsPage() {
   async function remove(p: Project) {
     await projectsApi.remove(p._id);
     toast("Project deleted", "success");
-    load();
+    refresh();
   }
 
   return (
@@ -143,7 +144,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} project={editing} onSaved={load} />
+      <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} project={editing} onSaved={refresh} />
       <ConfirmDialog
         open={Boolean(deleting)}
         onOpenChange={(o) => !o && setDeleting(null)}

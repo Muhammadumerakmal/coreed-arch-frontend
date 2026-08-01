@@ -1,22 +1,16 @@
 "use client";
 import * as React from "react";
 import { ListChecks, CheckCircle2, AlertTriangle, FolderKanban } from "lucide-react";
-import { projects as projectsApi, tasks as tasksApi } from "@/lib/api";
+import { tasks as tasksApi } from "@/lib/api";
 import type { Task, TaskPriority } from "@/lib/types";
+import { useMyProjects } from "@/lib/hooks";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Donut } from "@/components/charts/donut";
 import { Progress } from "@/components/ui/progress";
+import { STATUS_HEX, PRIORITY_CHIP } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-const C = { done: "#10b981", inProgress: "#3b82f6", todo: "#f59e0b" };
-const PRIORITY_COLOR: Record<TaskPriority, string> = {
-  low: "bg-slate-400",
-  medium: "bg-blue-500",
-  high: "bg-amber-500",
-  critical: "bg-red-500",
-};
 
 type Data = {
   total: number; done: number; inProgress: number; todo: number; overdue: number;
@@ -26,17 +20,19 @@ type Data = {
 };
 
 export default function ReportsPage() {
+  const { projects, loading: projectsLoading } = useMyProjects();
   const [data, setData] = React.useState<Data | null>(null);
 
   React.useEffect(() => {
+    if (projectsLoading) return;
+    let active = true;
     (async () => {
-      const { projects } = await projectsApi.list().catch(() => ({ projects: [] }));
       const lists = await Promise.all(projects.map((mp) => tasksApi.list(mp.project._id, { limit: 100 }).then((r) => ({ name: mp.project.name, tasks: r.tasks })).catch(() => ({ name: mp.project.name, tasks: [] as Task[] }))));
       const all = lists.flatMap((l) => l.tasks);
       const now = Date.now();
       const priority: Record<TaskPriority, number> = { low: 0, medium: 0, high: 0, critical: 0 };
       for (const t of all) priority[t.priority]++;
-      setData({
+      if (active) setData({
         total: all.length,
         done: all.filter((t) => t.status === "done").length,
         inProgress: all.filter((t) => t.status === "in-progress").length,
@@ -47,7 +43,8 @@ export default function ReportsPage() {
         perProject: lists.map((l) => ({ name: l.name, done: l.tasks.filter((t) => t.status === "done").length, total: l.tasks.length })),
       });
     })();
-  }, []);
+    return () => { active = false; };
+  }, [projects, projectsLoading]);
 
   if (!data) return (
     <div>
@@ -83,14 +80,14 @@ export default function ReportsPage() {
         <Card className="items-center p-6">
           <h3 className="w-full font-semibold">Tasks by Status</h3>
           <Donut size={190} centerLabel={data.total} centerSub="Total Tasks" segments={[
-            { label: "Completed", value: data.done, color: C.done },
-            { label: "In Progress", value: data.inProgress, color: C.inProgress },
-            { label: "To Do", value: data.todo, color: C.todo },
+            { label: "Completed", value: data.done, color: STATUS_HEX.done },
+            { label: "In Progress", value: data.inProgress, color: STATUS_HEX["in-progress"] },
+            { label: "To Do", value: data.todo, color: STATUS_HEX["to-do"] },
           ]} />
           <div className="mt-4 flex w-full justify-center gap-4 text-sm">
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: C.done }} /> Done {data.done}</span>
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: C.inProgress }} /> In Progress {data.inProgress}</span>
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: C.todo }} /> To Do {data.todo}</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: STATUS_HEX.done }} /> Done {data.done}</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: STATUS_HEX["in-progress"] }} /> In Progress {data.inProgress}</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: STATUS_HEX["to-do"] }} /> To Do {data.todo}</span>
           </div>
         </Card>
 
@@ -101,7 +98,7 @@ export default function ReportsPage() {
               <div key={p} className="flex items-center gap-3">
                 <span className="w-16 text-sm capitalize">{p}</span>
                 <div className="bg-muted h-6 flex-1 overflow-hidden rounded-md">
-                  <div className={cn("flex h-full items-center justify-end rounded-md px-2 text-xs font-medium text-white", PRIORITY_COLOR[p])} style={{ width: `${(data.priority[p] / maxPriority) * 100}%`, minWidth: data.priority[p] ? "1.5rem" : 0 }}>
+                  <div className={cn("flex h-full items-center justify-end rounded-md px-2 text-xs font-medium text-white", PRIORITY_CHIP[p])} style={{ width: `${(data.priority[p] / maxPriority) * 100}%`, minWidth: data.priority[p] ? "1.5rem" : 0 }}>
                     {data.priority[p] || ""}
                   </div>
                 </div>

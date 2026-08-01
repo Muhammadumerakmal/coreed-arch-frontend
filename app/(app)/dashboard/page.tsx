@@ -11,9 +11,10 @@ import {
   Sparkles,
   CalendarClock,
 } from "lucide-react";
-import { projects as projectsApi, tasks as tasksApi, members as membersApi } from "@/lib/api";
+import { tasks as tasksApi, members as membersApi } from "@/lib/api";
 import type { MyProject, Task, User } from "@/lib/types";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useMyProjects } from "@/lib/hooks";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,14 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Donut } from "@/components/charts/donut";
-import { initials, colorFromString, relativeDue, formatDate } from "@/lib/format";
-
-const C = {
-  done: "#10b981",
-  inProgress: "#3b82f6",
-  todo: "#f59e0b",
-  overdue: "#ef4444",
-};
+import { initials, colorFromString, relativeDue, formatDate, STATUS_HEX, OVERDUE_HEX } from "@/lib/format";
 
 type ProjRow = { p: MyProject["project"]; role: string; total: number; done: number; pct: number };
 
@@ -61,15 +55,16 @@ function relativeTime(date?: string): string {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { projects, loading: projectsLoading } = useMyProjects();
   const [data, setData] = React.useState<Agg | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    if (projectsLoading) return;
     let active = true;
     (async () => {
       try {
-        const { projects } = await projectsApi.list();
         const perProject = await Promise.all(
           projects.map(async (mp) => {
             const [taskRes, memberRes] = await Promise.all([
@@ -127,7 +122,7 @@ export default function DashboardPage() {
       }
     })();
     return () => { active = false; };
-  }, []);
+  }, [projects, projectsLoading]);
 
   if (loading) return <DashboardSkeleton />;
   if (error)
@@ -159,13 +154,13 @@ export default function DashboardPage() {
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Total Projects" value={d.rows.length} icon={FolderKanban}
-          tint="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" color={C.inProgress}
+          tint="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" color={STATUS_HEX["in-progress"]}
           series={d.series.tasks} caption={`${totalTasks} tasks total`} />
         <StatCard label="Completed Tasks" value={d.completed} icon={CheckCircle2}
-          tint="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" color={C.done}
+          tint="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" color={STATUS_HEX.done}
           series={d.series.done} caption={totalTasks ? `${Math.round((d.completed / totalTasks) * 100)}% of all tasks` : "No tasks yet"} />
         <StatCard label="Pending Tasks" value={d.pending} icon={Clock}
-          tint="bg-amber-500/15 text-amber-600 dark:text-amber-400" color={C.todo}
+          tint="bg-amber-500/15 text-amber-600 dark:text-amber-400" color={STATUS_HEX["to-do"]}
           series={d.series.pending} caption={`${d.overdue} overdue`} />
         <StatCard label="Team Members" value={d.teamCount} icon={Users}
           tint="bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400" color="#a855f7"
@@ -207,16 +202,16 @@ export default function DashboardPage() {
             centerLabel={totalTasks}
             centerSub="Total Tasks"
             segments={[
-              { label: "Completed", value: d.completed, color: C.done },
-              { label: "In Progress", value: d.inProgress, color: C.inProgress },
-              { label: "To Do", value: d.todo, color: C.todo },
+              { label: "Completed", value: d.completed, color: STATUS_HEX.done },
+              { label: "In Progress", value: d.inProgress, color: STATUS_HEX["in-progress"] },
+              { label: "To Do", value: d.todo, color: STATUS_HEX["to-do"] },
             ]}
           />
           <div className="mt-4 w-full space-y-2">
-            <LegendRow color={C.done} label="Completed" value={d.completed} total={totalTasks} />
-            <LegendRow color={C.inProgress} label="In Progress" value={d.inProgress} total={totalTasks} />
-            <LegendRow color={C.todo} label="To Do" value={d.todo} total={totalTasks} />
-            <LegendRow color={C.overdue} label="Overdue" value={d.overdue} total={totalTasks} />
+            <LegendRow color={STATUS_HEX.done} label="Completed" value={d.completed} total={totalTasks} />
+            <LegendRow color={STATUS_HEX["in-progress"]} label="In Progress" value={d.inProgress} total={totalTasks} />
+            <LegendRow color={STATUS_HEX["to-do"]} label="To Do" value={d.todo} total={totalTasks} />
+            <LegendRow color={OVERDUE_HEX} label="Overdue" value={d.overdue} total={totalTasks} />
           </div>
         </Card>
       </div>

@@ -19,7 +19,7 @@ const PROTECTED_PREFIXES = [
   "/settings",
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hasToken = Boolean(req.cookies.get("accessToken")?.value);
   const isAuthPage = pathname === "/login" || pathname === "/register";

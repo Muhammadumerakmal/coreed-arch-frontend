@@ -2,7 +2,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { ListChecks, CalendarClock } from "lucide-react";
-import { projects as projectsApi, tasks as tasksApi } from "@/lib/api";
+import { tasks as tasksApi } from "@/lib/api";
+import { useMyProjects } from "@/lib/hooks";
 import type { Task, TaskStatus, TaskPriority } from "@/lib/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
@@ -15,13 +16,15 @@ import { STATUS_LABEL, PRIORITY_VARIANT, relativeDue } from "@/lib/format";
 type Row = Task & { projectName: string };
 
 export default function AllTasksPage() {
+  const { projects, loading: projectsLoading } = useMyProjects();
   const [rows, setRows] = React.useState<Row[] | null>(null);
   const [status, setStatus] = React.useState<string>("all");
   const [priority, setPriority] = React.useState<string>("all");
 
   React.useEffect(() => {
+    if (projectsLoading) return;
+    let active = true;
     (async () => {
-      const { projects } = await projectsApi.list().catch(() => ({ projects: [] }));
       const all = await Promise.all(
         projects.map((mp) =>
           tasksApi.list(mp.project._id, { limit: 100 })
@@ -29,9 +32,10 @@ export default function AllTasksPage() {
             .catch(() => [] as Row[]),
         ),
       );
-      setRows(all.flat());
+      if (active) setRows(all.flat());
     })();
-  }, []);
+    return () => { active = false; };
+  }, [projects, projectsLoading]);
 
   const filtered = (rows ?? []).filter(
     (t) => (status === "all" || t.status === status) && (priority === "all" || t.priority === priority),

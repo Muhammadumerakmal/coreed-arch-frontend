@@ -46,6 +46,28 @@ export const PRIORITY_VARIANT: Record<TaskPriority, "secondary" | "info" | "warn
   critical: "danger",
 };
 
+export const STATUS_HEX: Record<TaskStatus, string> = {
+  "to-do": "#f59e0b",
+  "in-progress": "#3b82f6",
+  done: "#10b981",
+};
+export const OVERDUE_HEX = "#ef4444";
+
+/** Tailwind classes for small status chips/badges. */
+export const STATUS_CHIP: Record<TaskStatus, string> = {
+  "to-do": "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  "in-progress": "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  done: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+};
+export const OVERDUE_CHIP = "bg-red-500/15 text-red-600 dark:text-red-400";
+
+export const PRIORITY_CHIP: Record<TaskPriority, string> = {
+  low: "bg-slate-400",
+  medium: "bg-blue-500",
+  high: "bg-amber-500",
+  critical: "bg-red-500",
+};
+
 /** Deterministic pleasant color from a string (for avatar fallbacks). */
 export function colorFromString(s: string): string {
   let hash = 0;

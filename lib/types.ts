@@ -132,3 +132,23 @@ export interface Paginated<T> {
   tasks: T[];
   pagination: { total: number; page: number; limit: number; totalPages: number };
 }
+
+export type NotificationType = "task_assignment" | "project_invite" | "project_activity" | "system";
+
+export interface AppNotification {
+  _id: string;
+  user: string;
+  type: NotificationType;
+  title: string;
+  body?: string;
+  link?: string;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationsResponse {
+  notifications: AppNotification[];
+  unreadCount: number;
+  pagination: { total: number; page: number; limit: number; totalPages: number };
+}

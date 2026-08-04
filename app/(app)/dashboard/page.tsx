@@ -15,6 +15,8 @@ import { tasks as tasksApi, members as membersApi } from "@/lib/api";
 import type { MyProject, Task, User } from "@/lib/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMyProjects } from "@/lib/hooks";
+import { useProjects } from "@/components/providers/projects-provider";
+import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,9 +62,11 @@ function relativeTime(date?: string): string {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { projects, loading: projectsLoading } = useMyProjects();
+  const { refresh } = useProjects();
   const [data, setData] = React.useState<Agg | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [formOpen, setFormOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (projectsLoading) return;
@@ -139,7 +143,7 @@ export default function DashboardPage() {
       <Card className="p-8 text-center">
         <p className="font-medium">Couldn&apos;t load your dashboard</p>
         <p className="text-muted-foreground mt-1 text-sm">{error}</p>
-        <p className="text-muted-foreground mt-2 text-xs">Make sure the backend is running on port 8000.</p>
+        <Button className="mt-4" onClick={() => window.location.reload()}>Try again</Button>
       </Card>
     );
 
@@ -155,8 +159,8 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight">Welcome back, {name} 👋</h1>
           <p className="text-muted-foreground mt-1 text-sm">Here&apos;s what&apos;s happening with your projects today.</p>
         </div>
-        <Button asChild>
-          <Link href="/projects"><Plus className="size-4" /> New Project</Link>
+        <Button onClick={() => setFormOpen(true)}>
+          <Plus className="size-4" /> New Project
         </Button>
       </div>
 
@@ -311,13 +315,14 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-fuchsia-600 p-6 text-white">
-          <Badge className="mb-2 border-white/30 bg-white/20 text-white">New</Badge>
           <h2 className="flex items-center gap-2 text-lg font-semibold"><Sparkles className="size-5" /> AI Assistant</h2>
           <p className="mt-1 max-w-sm text-sm text-white/85">Get AI-powered help with tasks, risk analysis, and planning across your projects.</p>
           <Button asChild variant="secondary" className="mt-4"><Link href="/ai-assistant">Open Assistant</Link></Button>
           <Sparkles className="absolute -bottom-6 -right-6 size-40 text-white/10" />
         </Card>
       </div>
+
+      <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} project={null} onSaved={refresh} />
     </div>
   );
 }

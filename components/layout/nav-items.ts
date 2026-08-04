@@ -30,7 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Subtasks", href: "/subtasks", icon: ListTree, section: "Workspace" },
   { label: "Notes", href: "/notes", icon: StickyNote, section: "Workspace" },
   { label: "Members", href: "/members", icon: Users, section: "Team" },
-  { label: "AI Assistant", href: "/ai-assistant", icon: Sparkles, badge: "New", section: "Intelligence" },
+  { label: "AI Assistant", href: "/ai-assistant", icon: Sparkles, section: "Intelligence" },
   { label: "Calendar", href: "/calendar", icon: Calendar, section: "Intelligence" },
   { label: "Reports", href: "/reports", icon: BarChart3, section: "Intelligence" },
   { label: "Profile", href: "/profile", icon: User, section: "Account" },

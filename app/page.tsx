@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Reveal, RevealGroup, RevealItem } from "@/components/common/reveal";
 
 const FEATURES: { icon: LucideIcon; title: string; desc: string }[] = [
   {
@@ -112,37 +113,45 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 pt-20 text-center sm:px-6 md:pt-28">
-        <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-          <Sparkles className="size-3.5" /> AI-powered project management
-        </div>
-        <h1 className="mx-auto mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-          Plan, collaborate, and ship with{" "}
-          <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent">
-            an AI copilot
-          </span>
-        </h1>
-        <p className="text-muted-foreground mx-auto mt-5 max-w-xl text-pretty text-base sm:text-lg">
-          Project Camp brings your projects, tasks, and team together — and puts an
-          intelligent assistant on your side to suggest, analyze, and plan.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button size="lg" variant="gradient" asChild>
-            <Link href="/register">Create free account <ArrowRight className="size-4" /></Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <a href="#features">Explore features</a>
-          </Button>
-        </div>
+        <Reveal>
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+            <Sparkles className="size-3.5" /> AI-powered project management
+          </div>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <h1 className="mx-auto mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
+            Plan, collaborate, and ship with{" "}
+            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent">
+              an AI copilot
+            </span>
+          </h1>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <p className="text-muted-foreground mx-auto mt-5 max-w-xl text-pretty text-base sm:text-lg">
+            Project Camp brings your projects, tasks, and team together — and puts an
+            intelligent assistant on your side to suggest, analyze, and plan.
+          </p>
+        </Reveal>
+        <Reveal delay={0.15}>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button size="lg" variant="gradient" asChild>
+              <Link href="/register">Create free account <ArrowRight className="size-4" /></Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <a href="#features">Explore features</a>
+            </Button>
+          </div>
+        </Reveal>
 
         {/* Mock dashboard */}
-        <div className="relative mx-auto mt-16 max-w-4xl">
+        <Reveal delay={0.2} className="relative mx-auto mt-16 max-w-4xl">
           <div className="absolute -inset-x-8 -top-8 -z-10 h-full rounded-[2rem] bg-gradient-to-b from-indigo-500/20 to-fuchsia-500/10 blur-2xl" />
           <div className="overflow-hidden rounded-2xl border border-border/60 bg-card text-left shadow-2xl">
             <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/30 px-4 py-2.5">
               <span className="size-2.5 rounded-full bg-red-400/70" />
               <span className="size-2.5 rounded-full bg-amber-400/70" />
               <span className="size-2.5 rounded-full bg-emerald-400/70" />
-              <span className="text-muted-foreground ml-2 text-xs">app.projectcamp.dev</span>
+              <span className="text-muted-foreground ml-2 text-xs">app.coreed-arch.vercel.app</span>
             </div>
             <div className="flex">
               {/* Faux sidebar */}
@@ -188,33 +197,37 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-24 sm:px-6">
-        <div className="text-center">
-          <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">Everything a team needs to stay in sync</h2>
-          <p className="text-muted-foreground mx-auto mt-3 max-w-xl text-pretty">
-            Purpose-built tools for planning and executing projects — without the complexity.
-          </p>
-        </div>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <Reveal>
+          <div className="text-center">
+            <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">Everything a team needs to stay in sync</h2>
+            <p className="text-muted-foreground mx-auto mt-3 max-w-xl text-pretty">
+              Purpose-built tools for planning and executing projects — without the complexity.
+            </p>
+          </div>
+        </Reveal>
+        <RevealGroup className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
-            <Card key={f.title} hover className="gap-0 p-6">
-              <div className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-xl">
-                <f.icon className="size-5" />
-              </div>
-              <h3 className="mt-4 font-semibold">{f.title}</h3>
-              <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">{f.desc}</p>
-            </Card>
+            <RevealItem key={f.title}>
+              <Card hover className="gap-0 p-6">
+                <div className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-xl">
+                  <f.icon className="size-5" />
+                </div>
+                <h3 className="mt-4 font-semibold">{f.title}</h3>
+                <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">{f.desc}</p>
+              </Card>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </section>
 
       {/* AI highlight */}
       <section id="ai" className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-24 sm:px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 p-8 text-white shadow-2xl shadow-indigo-500/30 sm:p-12">
+        <Reveal className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 p-8 text-white shadow-2xl shadow-indigo-500/30 sm:p-12">
           <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-20 left-1/3 size-64 rounded-full bg-black/10 blur-2xl" />
           <div className="relative grid items-center gap-10 lg:grid-cols-2">
@@ -252,25 +265,29 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-24 text-center sm:px-6">
-        <h2 className="mx-auto max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-          Ready to run projects with an AI copilot?
-        </h2>
-        <p className="text-muted-foreground mx-auto mt-3 max-w-lg text-pretty">
-          Set up your workspace in minutes. No credit card required.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Reveal>
+          <h2 className="mx-auto max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+            Ready to run projects with an AI copilot?
+          </h2>
+          <p className="text-muted-foreground mx-auto mt-3 max-w-lg text-pretty">
+            Set up your workspace in minutes. No credit card required.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Button size="lg" variant="gradient" asChild>
             <Link href="/register">Create free account <ArrowRight className="size-4" /></Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
             <Link href="/login">Sign in</Link>
           </Button>
-        </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* Footer */}

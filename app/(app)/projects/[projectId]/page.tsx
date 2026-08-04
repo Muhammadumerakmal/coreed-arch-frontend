@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Plus, Users } from "lucide-react";
 import { projects as projectsApi, tasks as tasksApi, members as membersApi, ApiError } from "@/lib/api";
 import type { Project, Task, ProjectMember, TaskStatus } from "@/lib/types";
+import { STATUS_ACCENT } from "@/lib/format";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,10 +15,10 @@ import { TaskCard } from "@/components/tasks/task-card";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
 import { TaskDetailDialog } from "@/components/tasks/task-detail-dialog";
 
-const COLUMNS: { status: TaskStatus; label: string; dot: string }[] = [
-  { status: "to-do", label: "To Do", dot: "bg-amber-500" },
-  { status: "in-progress", label: "In Progress", dot: "bg-blue-500" },
-  { status: "done", label: "Done", dot: "bg-emerald-500" },
+const COLUMNS: { status: TaskStatus; label: string }[] = [
+  { status: "to-do", label: "To Do" },
+  { status: "in-progress", label: "In Progress" },
+  { status: "done", label: "Done" },
 ];
 
 export default function ProjectWorkspace() {
@@ -88,7 +89,7 @@ export default function ProjectWorkspace() {
               <div key={col.status} className="bg-muted/40 rounded-xl p-3">
                 <div className="mb-3 flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <span className={`size-2.5 rounded-full ${col.dot}`} />
+                    <span className={`size-2.5 rounded-full ${STATUS_ACCENT[col.status]}`} />
                     <h3 className="text-sm font-semibold">{col.label}</h3>
                     <span className="text-muted-foreground text-xs">{items.length}</span>
                   </div>

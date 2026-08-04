@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { EmptyState } from "@/components/common/empty-state";
-import { STATUS_LABEL, PRIORITY_VARIANT, relativeDue } from "@/lib/format";
+import { STATUS_LABEL, STATUS_ACCENT, PRIORITY_VARIANT, relativeDue } from "@/lib/format";
 
 type Row = Task & { projectName: string };
 
@@ -78,7 +78,7 @@ export default function AllTasksPage() {
             const due = t.dueDate ? relativeDue(t.dueDate) : null;
             return (
               <Link key={t._id} href={`/projects/${t.project}`} className="hover:bg-muted/40 flex items-center gap-3 px-4 py-3 transition-colors">
-                <span className={`size-2.5 shrink-0 rounded-full ${t.status === "done" ? "bg-emerald-500" : t.status === "in-progress" ? "bg-blue-500" : "bg-amber-500"}`} />
+                <span className={`size-2.5 shrink-0 rounded-full ${STATUS_ACCENT[t.status]}`} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{t.title}</p>
                   <p className="text-muted-foreground truncate text-xs">{t.projectName}</p>

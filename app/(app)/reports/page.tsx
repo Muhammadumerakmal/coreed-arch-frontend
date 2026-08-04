@@ -1,15 +1,16 @@
 "use client";
 import * as React from "react";
-import { ListChecks, CheckCircle2, AlertTriangle, FolderKanban } from "lucide-react";
+import { ListChecks, CheckCircle2, AlertTriangle, FolderKanban, Download } from "lucide-react";
 import { tasks as tasksApi } from "@/lib/api";
 import type { Task, TaskPriority } from "@/lib/types";
 import { useMyProjects } from "@/lib/hooks";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Donut } from "@/components/charts/donut";
 import { Progress } from "@/components/ui/progress";
-import { STATUS_HEX, PRIORITY_CHIP } from "@/lib/format";
+import { STATUS_HEX, PRIORITY_CHIP, STATUS_LABEL } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Data = {
@@ -21,30 +22,48 @@ type Data = {
   subtaskDone: number;
 };
 
+type Range = "all" | "7" | "30" | "90";
+
+const RANGES: { key: Range; label: string }[] = [
+  { key: "all", label: "All time" },
+  { key: "7", label: "7 days" },
+  { key: "30", label: "30 days" },
+  { key: "90", label: "90 days" },
+];
+
+const DAY = 86_400_000;
+
 export default function ReportsPage() {
   const { projects, loading: projectsLoading } = useMyProjects();
   const [data, setData] = React.useState<Data | null>(null);
+  const [rows, setRows] = React.useState<{ project: string; task: Task }[]>([]);
+  const [range, setRange] = React.useState<Range>("all");
 
   React.useEffect(() => {
     if (projectsLoading) return;
     let active = true;
     (async () => {
       const lists = await Promise.all(projects.map((mp) => tasksApi.list(mp.project._id, { limit: 100 }).then((r) => ({ name: mp.project.name, tasks: r.tasks })).catch(() => ({ name: mp.project.name, tasks: [] as Task[] }))));
-      const all = lists.flatMap((l) => l.tasks);
+      const cutoff = range === "all" ? 0 : Date.now() - Number(range) * DAY;
+      const all = lists.flatMap((l) =>
+        l.tasks.filter((t) => range === "all" || new Date(t.updatedAt).getTime() >= cutoff).map((t) => ({ project: l.name, task: t })),
+      );
+      if (!active) return;
       const now = Date.now();
       const priority: Record<TaskPriority, number> = { low: 0, medium: 0, high: 0, critical: 0 };
       let subtaskTotal = 0, subtaskDone = 0;
-      for (const t of all) {
-        priority[t.priority]++;
-        subtaskTotal += t.subtaskCount ?? 0;
-        subtaskDone += t.completedSubtaskCount ?? 0;
+      for (const { task } of all) {
+        priority[task.priority]++;
+        subtaskTotal += task.subtaskCount ?? 0;
+        subtaskDone += task.completedSubtaskCount ?? 0;
       }
-      if (active) setData({
+      setRows(all);
+      setData({
         total: all.length,
-        done: all.filter((t) => t.status === "done").length,
-        inProgress: all.filter((t) => t.status === "in-progress").length,
-        todo: all.filter((t) => t.status === "to-do").length,
-        overdue: all.filter((t) => t.status !== "done" && t.dueDate && new Date(t.dueDate).getTime() < now).length,
+        done: all.filter(({ task }) => task.status === "done").length,
+        inProgress: all.filter(({ task }) => task.status === "in-progress").length,
+        todo: all.filter(({ task }) => task.status === "to-do").length,
+        overdue: all.filter(({ task }) => task.status !== "done" && task.dueDate && new Date(task.dueDate).getTime() < now).length,
         projectsCount: projects.length,
         priority,
         perProject: lists.map((l) => ({ name: l.name, done: l.tasks.filter((t) => t.status === "done").length, total: l.tasks.length })),
@@ -53,7 +72,22 @@ export default function ReportsPage() {
       });
     })();
     return () => { active = false; };
-  }, [projects, projectsLoading]);
+  }, [projects, projectsLoading, range]);
+
+  const exportCsv = () => {
+    const header = ["Project", "Title", "Status", "Priority", "Due date", "Updated"];
+    const lines = rows.map(({ project, task }) =>
+      [project, task.title, STATUS_LABEL[task.status], task.priority, task.dueDate ?? "", task.updatedAt ?? ""]
+        .map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
+    );
+    const blob = new Blob([[header.join(","), ...lines].join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reports.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (!data) return (
     <div>
@@ -73,7 +107,28 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Reports" subtitle="Insights across your projects." />
+      <PageHeader
+        title="Reports"
+        subtitle="Insights across your projects."
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="bg-muted flex items-center gap-1 rounded-lg p-1">
+              {RANGES.map((r) => (
+                <button
+                  key={r.key}
+                  onClick={() => setRange(r.key)}
+                  className={cn("rounded-md px-3 py-1 text-xs font-semibold transition-colors", range === r.key ? "bg-card shadow-sm" : "text-muted-foreground")}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
+              <Download className="size-4" /> Export CSV
+            </Button>
+          </div>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {tiles.map((t) => (

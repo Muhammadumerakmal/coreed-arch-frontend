@@ -64,8 +64,7 @@ export function AuthShell({
               ))}
             </div>
             <div className="text-sm">
-              <span className="font-semibold text-sidebar-accent-foreground">500+ teams</span>
-              <span className="text-sidebar-foreground/70"> planning smarter</span>
+              <span className="font-semibold text-sidebar-accent-foreground">Trusted by growing teams</span>
             </div>
           </div>
           <div className="text-sidebar-foreground/60 text-sm">© {new Date().getFullYear()} Project Camp</div>

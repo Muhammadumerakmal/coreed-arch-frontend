@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_LABEL } from "@/lib/format";
+import { STATUS_LABEL, STATUS_ACCENT } from "@/lib/format";
 
 type TaskWithSubs = { task: Task; subs: Subtask[] };
 
@@ -138,7 +138,7 @@ export default function SubtasksPage() {
             {rows.map(({ task, subs }) => (
               <Card key={task._id} className="gap-0 p-5">
                 <div className="flex items-center gap-2">
-                  <span className={`size-2.5 rounded-full ${task.status === "done" ? "bg-emerald-500" : task.status === "in-progress" ? "bg-blue-500" : "bg-amber-500"}`} />
+                  <span className={`size-2.5 rounded-full ${STATUS_ACCENT[task.status]}`} />
                   <h3 className="flex-1 truncate text-sm font-semibold">{task.title}</h3>
                   <Badge variant="outline" className="capitalize">{STATUS_LABEL[task.status]}</Badge>
                   {subs.length > 0 && (

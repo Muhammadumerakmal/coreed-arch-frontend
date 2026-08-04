@@ -15,10 +15,12 @@ import type {
   TaskStatus,
   TaskPriority,
   MemberRole,
+  AppNotification,
+  NotificationsResponse,
 } from "./types";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "https://coreed-arch-backend.vercel.app/api/v1";
 
 export class ApiError extends Error {
   status: number;
@@ -47,7 +49,7 @@ async function apiFetch<T>(path: string, opts: FetchOptions = {}): Promise<T> {
       ...rest,
     });
   } catch {
-    throw new ApiError(0, "Cannot reach the server. Is the backend running on port 8000?");
+    throw new ApiError(0, "Cannot reach the server. Please try again in a moment.");
   }
 
   let json: ApiResponse<T> | { message?: string; error?: unknown };
@@ -195,6 +197,15 @@ export const notes = {
   ) => apiFetch<Note>(`/notes/${projectId}/${noteId}`, { method: "PUT", body: data }),
   remove: (projectId: string, noteId: string) =>
     apiFetch<null>(`/notes/${projectId}/${noteId}`, { method: "DELETE" }),
+};
+
+// ---------------------------------------------------------- notifications
+export const notifications = {
+  list: (params: { page?: number; limit?: number } = {}) =>
+    apiFetch<NotificationsResponse>(`/notifications${qs(params)}`, { method: "GET" }),
+  markRead: (notificationId: string) =>
+    apiFetch<AppNotification>(`/notifications/${notificationId}/read`, { method: "PATCH" }),
+  markAllRead: () => apiFetch<{ modified: number }>("/notifications/read-all", { method: "PATCH" }),
 };
 
 // ------------------------------------------------------------------- ai
